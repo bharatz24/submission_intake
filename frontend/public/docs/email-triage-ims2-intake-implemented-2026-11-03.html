@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Email Triage → IMS 2 Intake — What Was Implemented</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#f6f5f1; --paper:#ffffff; --ink:#23221f; --muted:#5f5e5a; --line:#d6d4cc; --code-bg:#efeeea;
+--purple:#6c5ce7; --purple-bg:#ebe8fb; --purple-ink:#2d2a6e;
+--coral:#c0623a; --coral-bg:#fcebe4; --coral-ink:#6a2e14;
+--teal:#2a9d8f; --teal-bg:#e3f3ef; --teal-ink:#124a43;
+--amber:#b8860b; --amber-bg:#fbf1dc; --amber-ink:#5a4206;
+--gray-bg:#efeeea; --gray-ink:#3d3d3a;
+--font-body:"IBM Plex Sans",system-ui,sans-serif; --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+color-scheme:dark;
+--bg:#1b1b19; --paper:#242422; --ink:#ecebe6; --muted:#a9a79f; --line:#3c3b37; --code-bg:#33332f;
+--purple:#a99cf5; --purple-bg:#2b2750; --purple-ink:#dcd8fb;
+--coral:#e58b63; --coral-bg:#4a2416; --coral-ink:#fbd9c9;
+--teal:#5cc4b6; --teal-bg:#133a35; --teal-ink:#cdeee8;
+--amber:#dbb34b; --amber-bg:#3f3110; --amber-ink:#f5e4b3;
+--gray-bg:#33332f; --gray-ink:#e3e2dc;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--font-body)}
+main{max-width:980px;margin:0 auto;padding:32px 24px 64px}
+header h1{font-size:1.65rem;font-weight:600;margin:0 0 6px;line-height:1.3}
+header p{margin:2px 0;color:var(--muted);font-size:.9rem}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 8px;padding:0;list-style:none}
+.toc a{display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);text-decoration:none;font-size:.8rem}
+.toc a:hover{border-color:var(--purple);color:var(--purple)}
+section{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px 24px;margin-top:20px}
+h2{font-size:1.15rem;font-weight:600;margin:0 0 12px;display:flex;align-items:center;gap:10px}
+h2 .n{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--purple-bg);color:var(--purple-ink);font-size:.8rem}
+h3{font-size:.98rem;font-weight:600;margin:20px 0 8px}
+h4{font-size:.9rem;font-weight:600;margin:14px 0 6px}
+p{margin:8px 0}
+ul,ol{margin:6px 0;padding-left:22px}
+li{margin:3px 0}
+code{font-family:var(--font-mono);font-size:.84em;background:var(--code-bg);padding:1px 5px;border-radius:4px;word-break:break-word}
+.table-wrap{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font-weight:600;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.75rem;font-weight:600;white-space:nowrap}
+.get{background:var(--teal-bg);color:var(--teal-ink)}
+.post{background:var(--purple-bg);color:var(--purple-ink)}
+.sev-high{background:var(--coral-bg);color:var(--coral-ink)}
+.sev-medium{background:var(--amber-bg);color:var(--amber-ink)}
+.sev-low,.sev-info{background:var(--gray-bg);color:var(--gray-ink)}
+.pass{background:var(--teal-bg);color:var(--teal-ink)}
+.note{border-left:3px solid var(--amber);background:var(--amber-bg);color:var(--amber-ink);padding:8px 12px;border-radius:0 6px 6px 0;margin:10px 0;font-size:.9rem}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:8px}
+.card{border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.card .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.checklist{list-style:none;padding:0}
+.checklist li{padding-left:26px;position:relative}
+.checklist li::before{content:"";position:absolute;left:2px;top:4px;width:14px;height:14px;border:1.5px solid var(--muted);border-radius:3px}
+@media (max-width:600px){ main{padding:20px 16px 48px} section{padding:16px} }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Email Triage → IMS 2 Intake — What Was Implemented</h1>
+  <p>Snapshot of the uncommitted work on <code>main</code> as of 2026-11-03.</p>
+  <p>Hand-off for the triage team: <code>docs/api/email-triage-integration.md</code> · Plan: <code>INTEGRATION_PLAN.md</code></p>
+  <ul class="toc">
+    <li><a href="#summary">1 · Summary</a></li>
+    <li><a href="#backend">2 · Backend</a></li>
+    <li><a href="#database">3 · Database</a></li>
+    <li><a href="#frontend">4 · Frontend</a></li>
+    <li><a href="#api-spec">5 · API spec</a></li>
+    <li><a href="#docs">6 · Docs</a></li>
+    <li><a href="#tests">7 · Tests</a></li>
+    <li><a href="#review">8 · Review findings</a></li>
+    <li><a href="#deploy">9 · Deploy checklist</a></li>
+  </ul>
+</header>
+
+<section id="summary">
+  <h2><span class="n">1</span>Summary</h2>
+  <p>The email-triage app (separate service, own database) can now push an accepted <strong>Intake Draft</strong> into IMS 2. IMS 2 turns it into an <code>open</code> Policy Log record under exactly the same rules as a record typed in on the screen, and shows a <strong>“From email triage”</strong> card on that record.</p>
+  <p>Three machine-to-machine endpoints, all under <code>/api/intake</code>, authenticated with <code>Authorization: Bearer &lt;INTAKE_API_TOKEN&gt;</code> (no browser session):</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Endpoint</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill get">GET</span> <code>/api/intake/lookup</code></td><td>Find an existing insured / broker before drafting (avoid duplicates)</td></tr>
+      <tr><td><span class="pill post">POST</span> <code>/api/intake/drafts</code></td><td>Accept a draft → create insured (optional) + Policy Log record</td></tr>
+      <tr><td><span class="pill get">GET</span> <code>/api/intake/drafts/:draftId/status</code></td><td>Live state of the record a draft created</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="backend">
+  <h2><span class="n">2</span>Backend</h2>
+
+  <h3>2.1 New route — <code>artifacts/api-server/src/routes/intakeDrafts.ts</code></h3>
+
+  <h4>Auth gate (<code>requireIntakeToken</code>)</h4>
+  <ul>
+    <li><code>INTAKE_API_TOKEN</code> unset → <strong>503</strong> (feature off).</li>
+    <li>Missing / wrong token → <strong>401</strong>. Compared with <code>timingSafeEqual</code>.</li>
+  </ul>
+
+  <h4><span class="pill get">GET</span> <code>/intake/lookup</code></h4>
+  <ul>
+    <li>Query params (at least one): <code>npi</code>, <code>email</code>, <code>licenseNumber</code> (exact, case-insensitive), <code>name</code> (fuzzy Jaro-Winkler ≥ 0.8), <code>brokerCode</code> (exact <code>brokers.broker_id</code>), <code>brokerName</code> (fuzzy on full + short name, plus “contains” match for ≥ 3 chars, score 85).</li>
+    <li>Returns <code>{ insureds, brokers }</code>, max 10 each, ranked by number of inputs matched, then score. Each hit has <code>matchedOn</code> and <code>score</code>.</li>
+    <li>Insured projection leaves out <code>taxid</code> and <code>dob</code>. Brokers include <code>active</code> flag.</li>
+  </ul>
+
+  <h4><span class="pill post">POST</span> <code>/intake/drafts</code> — one transaction</h4>
+  <ol>
+    <li>Create the insured (with optional locations / contacts, first of each = primary) <strong>or</strong> link an existing one by <code>insuredId</code>.</li>
+    <li>Create <code>submission</code> + <code>submissions_details</code> + <code>policy_log_created</code> audit.</li>
+    <li>Insert <code>intake_drafts</code> row + <code>intake_draft_accepted</code> audit.</li>
+  </ol>
+  <p><strong>Rules enforced:</strong></p>
+  <ul>
+    <li>Body validated against a zod contract; <code>contractVersion</code> must be <code>1</code>.</li>
+    <li><code>actingUserEmail</code> must be an active IMS 2 user with <code>policy-log:create</code> (+ <code>insured:create</code> when creating an insured). Optional <code>INTAKE_DEFAULT_USER</code> fallback for reviewers with no IMS 2 account (reviewer email kept in audit; deactivated users still refused).</li>
+    <li>Broker must exist and be <strong>active</strong>.</li>
+    <li><code>policy.brokerId / brokerName / primaryInsuredId / insuredId</code> are reserved (set from the broker / insured sections) → 400.</li>
+    <li>Locations / contacts only allowed with <code>insured.create</code> — a draft never changes an existing insured. Max 20 each, validated with the Insured screen’s validators.</li>
+    <li>Same policy rules as <code>POST /policy-logs</code> (no <code>policyNumber</code>, starts <code>open</code>, term rules, no endorsements, binder status list, etc.). A rule failure rolls back the insured it would have created.</li>
+    <li><strong>Idempotent on <code>draftId</code></strong>: same <code>draftId</code> + <code>draftVersion</code> → 200 with the original submission (<code>replayed: true</code>); a different version → 409. Concurrent resends handled via the PK unique violation.</li>
+    <li><code>ratingIndication</code> / <code>setupProposal</code> are stored only on the draft row — <strong>never</strong> written to the submission, never read by the bind gate.</li>
+  </ul>
+
+  <h4><span class="pill get">GET</span> <code>/intake/drafts/:draftId/status</code></h4>
+  <ul>
+    <li>Returns submission id/number, workflow status, policy number, bound, posted to bordereaux, deleted, dates, premium, binder status, and the deep link <code>url</code>. 404 if never accepted.</li>
+  </ul>
+
+  <h3>2.2 Refactor — <code>routes/policyLogs.ts</code></h3>
+  <ul>
+    <li><code>POST /policy-logs</code> split into two exported helpers so the intake route reuses them:
+      <ul>
+        <li><code>checkPolicyLogCreate(body)</code> — all create rules, no DB access; returns the 400 body or a checked input.</li>
+        <li><code>insertPolicyLog(tx, input, actor, auditDetails)</code> — inserts both tables + audit inside the caller’s transaction.</li>
+      </ul>
+    </li>
+    <li>Behaviour of <code>POST /policy-logs</code> is unchanged.</li>
+    <li><code>GET /policy-logs/:id</code> now also returns <code>intake</code> (provenance from <code>intake_drafts</code>, or <code>null</code>).</li>
+  </ul>
+
+  <h3>2.3 Other backend changes</h3>
+  <ul>
+    <li><code>routes/insureds.ts</code>: <code>coerceProfile</code> and <code>primaryName</code> are now exported (reused by intake).</li>
+    <li><code>routes/index.ts</code>: the three <code>/intake/*</code> routes are registered <strong>above</strong> <code>requireAuth</code> (they authenticate themselves).</li>
+  </ul>
+</section>
+
+<section id="database">
+  <h2><span class="n">3</span>Database</h2>
+  <ul>
+    <li>Migration <code>lib/db/drizzle/0056_intake_drafts.sql</code> — additive, new table only. <strong>Already applied</strong> to the local DB (<code>ims2finance-db</code>).</li>
+    <li>Drizzle schema <code>lib/db/src/schema/intakeDrafts.ts</code>, exported from <code>schema/index.ts</code>.</li>
+  </ul>
+  <p><code>intake_drafts</code> columns:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Column</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>draft_id</code></td><td>PK, idempotency key</td></tr>
+      <tr><td><code>draft_version</code></td><td></td></tr>
+      <tr><td><code>contract_version</code></td><td></td></tr>
+      <tr><td><code>submission_id</code></td><td>FK → <code>submission</code>, indexed</td></tr>
+      <tr><td><code>insured_id</code></td><td></td></tr>
+      <tr><td><code>created_insured</code></td><td></td></tr>
+      <tr><td><code>acting_user_id</code></td><td>FK → <code>users</code></td></tr>
+      <tr><td><code>triage_url</code></td><td></td></tr>
+      <tr><td><code>rating_indication</code></td><td></td></tr>
+      <tr><td><code>setup_proposal</code></td><td></td></tr>
+      <tr><td><code>field_sources</code></td><td>jsonb</td></tr>
+      <tr><td><code>payload</code></td><td>full request body</td></tr>
+      <tr><td><code>created_at</code></td><td></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="frontend">
+  <h2><span class="n">4</span>Frontend (Policy Log page)</h2>
+  <ul>
+    <li><strong><code>components/rail/TriageCard.tsx</code></strong> — new right-rail card, shown only when <code>record.intake</code> is set:
+      <ul>
+        <li>Draft id / version, accepted date, “Open in triage ↗” link, “insured was created from this draft” note.</li>
+        <li><strong>Suggestions</strong> list (rating indication + setup proposal) with per-row <strong>Apply</strong> and <strong>Apply all</strong>. Each row shows the current value and is marked <em>In form</em>, <em>Locked</em>, <em>Calculated field</em>, <em>Not a single value</em> or <em>Not a Policy Log field</em> when it can’t be applied.</li>
+        <li>Apply only stages the value as an <strong>unsaved edit</strong> and opens its stage — nothing is saved until the user saves the stage.</li>
+        <li><strong>Field sources</strong> list with <code>SourceChip</code> (Extracted / Edited / Manual).</li>
+      </ul>
+    </li>
+    <li><strong><code>model/intake.ts</code></strong> — <code>proposalRows()</code> / <code>findField()</code>: maps proposal keys to Policy Log fields and decides applicability.</li>
+    <li><strong><code>fields/FieldControl.tsx</code></strong> — shows the <code>SourceChip</code> next to a field’s label on triage-created records.</li>
+    <li><strong><code>index.tsx</code></strong> — mounts <code>&lt;TriageCard /&gt;</code> between <code>BlockingBind</code> and <code>RecordCard</code>.</li>
+    <li><strong><code>types.ts</code></strong> — <code>RecordResponse.intake</code>, <code>IntakeProvenance</code>, <code>FieldSource</code>.</li>
+  </ul>
+</section>
+
+<section id="api-spec">
+  <h2><span class="n">5</span>API spec &amp; generated code</h2>
+  <ul>
+    <li><code>lib/api-spec/openapi.yaml</code> — new <code>intake</code> tag with the three endpoints and their schemas.</li>
+    <li>Regenerated (do not hand-edit): <code>lib/api-zod/src/generated/*</code> (16 new <code>intake*</code> type files) and <code>lib/api-client-react/src/generated/*</code>.</li>
+  </ul>
+</section>
+
+<section id="docs">
+  <h2><span class="n">6</span>Docs</h2>
+  <ul>
+    <li><code>docs/api/email-triage-integration.md</code> — hand-off for the triage team (flow, contract, what triage must build).</li>
+    <li><code>docs/submission-review/INTEGRATION_PLAN.md</code> — integration plan.</li>
+  </ul>
+</section>
+
+<section id="tests">
+  <h2><span class="n">7</span>Tests <span style="font-weight:400;color:var(--muted);font-size:.85rem">(run 2026-11-03, all passing)</span></h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Suite</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td><code>api-server/src/__tests__/intakeDrafts.db.test.ts</code> (local DB, rolled back)</td><td><span class="pill pass">15 / 15 pass</span></td></tr>
+      <tr><td><code>insurepay-app/.../rail/__tests__/TriageCard.test.tsx</code></td><td><span class="pill pass">6 / 6 pass</span></td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Covered:</strong> auth 401/503, link vs. create insured, locations/contacts, idempotency + 409, rollback on rule failure, permission / inactive broker / reserved keys / bad contract refusals, <code>INTAKE_DEFAULT_USER</code>, provenance on <code>GET /policy-logs/:id</code>, status endpoint, lookup ranking and <code>taxid</code> exclusion, card rendering and Apply / Apply all.</p>
+  <div class="note"><strong>Not run:</strong> full root <code>pnpm run typecheck</code>.</div>
+</section>
+
+<section id="review">
+  <h2><span class="n">8</span>Review findings — fix before committing</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Severity</th><th>Finding</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><span class="pill sev-high">High</span></td><td><code>triageUrl</code> is validated with zod <code>.url()</code>, which accepts <code>javascript:alert(1)</code> (verified on zod 3.25.76). It is rendered as <code>&lt;a href&gt;</code> in <code>TriageCard</code>.</td><td>Restrict to <code>http:</code>/<code>https:</code> in <code>draftSchema</code> (e.g. <code>.refine(u =&gt; /^https?:\/\//i.test(u))</code>) and guard the <code>href</code> in the card.</td></tr>
+      <tr><td>2</td><td><span class="pill sev-medium">Medium</span></td><td>Four shell scripts lost their executable bit (<code>100755 → 100644</code>): <code>push-env-to-netlify.sh</code>, <code>scripts/build-production.sh</code>, <code>scripts/feedback-smoke.sh</code>, <code>scripts/policy-profile-smoke.sh</code>. Side effect of the Windows checkout.</td><td>Don’t stage them (<code>git checkout -- &lt;files&gt;</code>), or set <code>git config core.fileMode false</code>.</td></tr>
+      <tr><td>3</td><td><span class="pill sev-medium">Medium</span></td><td><code>.claude/harness/SKills/ims-business-logic/POLICY_SETUP_VALIDATION_RULES.md</code> is deleted but still referenced by <code>policySetupRules.ts</code>, <code>REPORTS_IMPORT_EXPORT_RULES.md</code>, <code>docs/policy-log/*</code> and migration <code>0047</code>.</td><td>Restore it unless the deletion is intended; if intended, update the references.</td></tr>
+      <tr><td>4</td><td><span class="pill sev-low">Low</span></td><td><code>email-triage-integration.md</code> links to <code>docs/api/external-policy-log-api.md</code> §5, which does not exist.</td><td>Add that file or fix the link.</td></tr>
+      <tr><td>5</td><td><span class="pill sev-low">Low</span></td><td><code>GET /intake/lookup?name=</code> loads <strong>every</strong> insured into memory for the fuzzy match on each call.</td><td>Fine at current size; add a prefilter (e.g. <code>pg_trgm</code>) if the insured table grows.</td></tr>
+      <tr><td>6</td><td><span class="pill sev-low">Low</span></td><td>Idempotency check runs <strong>after</strong> the permission check, so a resend by a user who has since lost permission gets 403 instead of the replay.</td><td>Move <code>existingDraft()</code> before the permission check if replays should always succeed.</td></tr>
+      <tr><td>7</td><td><span class="pill sev-info">Info</span></td><td><code>policy.masterInsuredName</code> / <code>memberName</code> from the draft override the insured’s canonical name in the snapshot.</td><td>Confirm that is intended.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="deploy">
+  <h2><span class="n">9</span>Deploy checklist</h2>
+  <ul class="checklist">
+    <li>Apply <code>0056_intake_drafts.sql</code> with <code>psql -f</code> on each environment.</li>
+    <li>Set <code>INTAKE_API_TOKEN</code> (and optionally <code>INTAKE_DEFAULT_USER</code>) in the API environment / Netlify.</li>
+    <li>Share the token and base URL with the triage team.</li>
+  </ul>
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,22 @@
+name: submission-review-uk
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ims
+      # Development default only; set POSTGRES_PASSWORD (and DATABASE_URL to match) anywhere else.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ims_dev_password}
+      POSTGRES_DB: ims
+    ports:
+      # Loopback only: the database is not reachable from other machines.
+      - '127.0.0.1:${DB_PORT:-5435}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ims']
+      interval: 5s
+      retries: 10
+
+volumes:
+  pgdata:

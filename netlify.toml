@@ -1,0 +1,79 @@
+# Netlify site: the SPA (frontend/dist) and the Express API as functions on one origin (same-origin /api, so the
+# session cookie and CSRF header work as behind nginx). Runbook: docs/deploy-netlify.md. The Docker Compose deployment
+# (docker-compose.prod.yml) is unaffected and stays the fallback.
+#
+# Secrets are NOT set here: they are Netlify environment variables scoped to Functions only (never Builds, never
+# VITE_*), except MIGRATOR_DATABASE_URL, which only the build reads.
+
+[build]
+  base = "."
+  publish = "frontend/dist"
+  # Backend first (functions import backend/dist), then migrations as the migrator role (forward-only; an edited
+  # applied migration fails the deploy), then the SPA, then the functions' own dependencies.
+  command = """
+    npm ci --prefix backend && npm --prefix backend run build \
+    && node netlify/migrate.mjs \
+    && npm ci --prefix frontend && npm --prefix frontend run build \
+    && npm ci --prefix netlify
+  """
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Install devDependencies (husky, typescript, vite) even if NODE_ENV=production reaches the build: npm otherwise
+  # omits them, and the root `prepare: husky` and both app builds fail. Does not change NODE_ENV itself.
+  NPM_CONFIG_INCLUDE = "dev"
+  # The SPA talks to the functions' limits: poll for notifications, upload in 3 MiB chunks.
+  VITE_EVENTS_TRANSPORT = "poll"
+  VITE_UPLOAD_MODE = "chunked"
+  # Netlify's secrets scan flags every env var value it finds in the repo. These hold plain, non-secret settings
+  # (e.g. NODE_ENV=production, RUNTIME=netlify, folder names, paths, a domain list) that the code and docs name.
+  # Real secrets (JWT_SECRET, ENCRYPTION_KEY, DATABASE_URL, Google OAuth, tokens) stay scanned.
+  SECRETS_SCAN_OMIT_KEYS = "NODE_ENV,RUNTIME,GDRIVE_ROOT_FOLDER_NAME,SKILLS_PATH,RATES_DIR,OCR_DATA_PATH,OUTBOUND_ALLOWED_DOMAINS"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  # Read at run time from paths relative to the function's working directory (SKILLS_PATH, RATES_DIR, OCR_DATA_PATH;
+  # the migration files and eval baseline via backend/src/runtime/moduleDir.ts).
+  included_files = [
+    "backend/assets/**", "backend/skills/**", "backend/data/**",
+    "backend/dist/db/migrations/**", "backend/evals/baseline.json",
+  ]
+  # Load files of their own at run time (OCR model loader, pdf.js worker): shipped as packages, not bundled.
+  external_node_modules = ["tesseract.js", "pdf-parse"]
+
+# Function memory: all functions run with Netlify's default (1 GB). Setting it (e.g. 3 GB for the worker's OCR and
+# large documents) needs a Pro plan with credit-based pricing; on that plan, restore:
+#   [functions.worker-background]
+#     memory = "3gb"
+
+# ---- Routing ----------------------------------------------------------------------------------------------------
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# Client-side routes of the SPA.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ---- Headers (keep in step with frontend/nginx/security-headers.conf, the single source of the policy) -----------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+# index.html and other unhashed files keep Netlify's default (max-age=0, must-revalidate), so a deploy shows at once.
+
+# Vite's hashed assets never change under the same name.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

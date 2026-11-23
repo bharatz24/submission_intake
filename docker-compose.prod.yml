@@ -1,0 +1,141 @@
+# Production-style stack: Postgres, the API and the SPA behind nginx. TLS terminates in front of `web` (a load
+# balancer or an edge proxy such as Caddy/Traefik); see docs/deploy.md.
+#
+# The API and web images are the ones CI built, tested and pushed to GHCR (`images` job in .github/workflows/ci.yml),
+# pinned by commit SHA; nothing is built on the host. Deploy or roll back by changing RELEASE_SHA (docs/deploy.md):
+#   docker compose -f docker-compose.prod.yml --env-file deploy.env up -d
+# deploy.env (on the host, never committed, chmod 600) holds the variables interpolated below: RELEASE_SHA (the commit to
+# run), IMAGE_PREFIX (ghcr.io/<owner>/<repo>, lowercase), POSTGRES_PASSWORD (bootstrap superuser, used only by the
+# release jobs), MIGRATOR_DB_PASSWORD and APP_DB_PASSWORD (least-privilege roles from backend/scripts/db-roles.sql;
+# URL-safe values, e.g. `openssl rand -hex 24`) and optionally TRUST_PROXY. Keep them out of backend/.env: that file is
+# loaded into the API container. The host needs this file, deploy.env, backend/.env and backend/scripts/db-roles.sql.
+name: submission-review
+
+# Every service: Docker's json-file driver with rotation, so container logs cannot fill the disk.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '5'
+
+# Release-step job that (re)applies the least-privilege roles and grants; see backend/scripts/db-roles.sql.
+x-db-roles: &db-roles
+  image: postgres:16-alpine@sha256:81e77a4833487b8132fe4b00bedd39dc3f74b8641e387f19312a48f7de218c2e
+  environment:
+    PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    MIGRATOR_DB_PASSWORD: ${MIGRATOR_DB_PASSWORD:?set MIGRATOR_DB_PASSWORD}
+    APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD}
+  command: >-
+    sh -c 'psql -h db -U ims -d ims -q -v ON_ERROR_STOP=1 -v migrator_password="$$MIGRATOR_DB_PASSWORD"
+    -v app_password="$$APP_DB_PASSWORD" -f /scripts/db-roles.sql'
+  volumes:
+    - ./backend/scripts/db-roles.sql:/scripts/db-roles.sql:ro
+  mem_limit: 128m
+  cpus: 0.25
+  logging: *logging
+  restart: 'no'
+
+services:
+  db:
+    image: postgres:16-alpine@sha256:81e77a4833487b8132fe4b00bedd39dc3f74b8641e387f19312a48f7de218c2e
+    environment:
+      POSTGRES_USER: ims
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ims
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ims']
+      interval: 5s
+      retries: 10
+    mem_limit: 1g
+    cpus: 1.0
+    logging: *logging
+    restart: unless-stopped
+
+  # Release step, run once per `up` before the API starts: back up, then migrate. Migrations are forward-only, so the
+  # dump taken here is the rollback (docs/deploy.md → Rollback). A failed backup or migration keeps the API down.
+  backup:
+    image: postgres:16-alpine
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    command: >-
+      sh -c 'f=/backups/pre-deploy-$$(date -u +%Y%m%dT%H%M%SZ).dump &&
+      pg_dump -Fc -h db -U ims -d ims -f "$$f" && echo "backup written: $$f"'
+    volumes:
+      - backups:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    logging: *logging
+    restart: 'no'
+
+  # Least-privilege roles before the migrations (creates ims_migrator/ims_app, hands existing objects to the migrator).
+  db-roles:
+    <<: *db-roles
+    depends_on:
+      backup:
+        condition: service_completed_successfully
+
+  migrate:
+    image: ${IMAGE_PREFIX:?set IMAGE_PREFIX, e.g. ghcr.io/owner/repo}-backend:${RELEASE_SHA:?set RELEASE_SHA to the commit SHA to deploy}
+    env_file: ./backend/.env
+    environment:
+      NODE_ENV: production
+      # The migrator role owns the schema; the API never connects with DDL rights.
+      DATABASE_URL: postgres://ims_migrator:${MIGRATOR_DB_PASSWORD:?set MIGRATOR_DB_PASSWORD}@db:5432/ims
+    command: ['node', 'dist/db/migrate.js']
+    depends_on:
+      db-roles:
+        condition: service_completed_successfully
+    mem_limit: 512m
+    cpus: 0.5
+    logging: *logging
+    restart: 'no'
+
+  # Same script after the migrations: grants on the tables they created, and the audit_events revoke on a fresh database.
+  db-grants:
+    <<: *db-roles
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  api:
+    image: ${IMAGE_PREFIX:?set IMAGE_PREFIX, e.g. ghcr.io/owner/repo}-backend:${RELEASE_SHA:?set RELEASE_SHA to the commit SHA to deploy}
+    env_file: ./backend/.env
+    environment:
+      NODE_ENV: production
+      # DML-only runtime role: no DDL, no TRUNCATE, no UPDATE/DELETE on audit_events (backend/scripts/db-roles.sql).
+      DATABASE_URL: postgres://ims_app:${APP_DB_PASSWORD:?set APP_DB_PASSWORD}@db:5432/ims
+      # Proxies that append to X-Forwarded-For in front of the API: the TLS edge (LB / Caddy / Traefik) and nginx (web),
+      # as in docs/deploy.md → Topology. Set TRUST_PROXY=1 only when nothing sits in front of `web`. Never `true`.
+      TRUST_PROXY: ${TRUST_PROXY:-2}
+      MIGRATE_ON_BOOT: 'false' # the migrate service above is the release step
+    depends_on:
+      db:
+        condition: service_healthy
+      db-grants:
+        condition: service_completed_successfully
+    # Peak memory: uploads and the Drive file cache (UPLOAD_CONCURRENCY x size, GDRIVE_CACHE_MB), plus the document
+    # parsing workers (EXTRACTION_WORKERS x (EXTRACTION_WORKER_MAX_MB + ~150 MB OCR)). See docs/deploy.md → Sizing.
+    mem_limit: 2g
+    cpus: 2.0
+    stop_grace_period: 40s # > SHUTDOWN_TIMEOUT_MS (25 s) + SHUTDOWN_GRACE_MS (5 s)
+    logging: *logging
+    restart: unless-stopped
+
+  web:
+    image: ${IMAGE_PREFIX:?set IMAGE_PREFIX, e.g. ghcr.io/owner/repo}-frontend:${RELEASE_SHA:?set RELEASE_SHA to the commit SHA to deploy}
+    ports:
+      - '127.0.0.1:8080:8080' # the TLS edge proxy forwards to this
+    depends_on:
+      api:
+        condition: service_healthy # the API image's HEALTHCHECK (/api/health)
+    mem_limit: 256m
+    cpus: 0.5
+    logging: *logging
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  backups:

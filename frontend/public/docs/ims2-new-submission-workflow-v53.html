@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IMS 2 New Submission Workflow v53 — email triage</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#f6f5f1; --paper:#ffffff; --ink:#23221f; --muted:#5f5e5a; --line:#d6d4cc;
+--purple:#6c5ce7; --purple-bg:#ebe8fb; --purple-ink:#2d2a6e;
+--coral:#c0623a;  --coral-bg:#fcebe4;  --coral-ink:#6a2e14;
+--teal:#2a9d8f;   --teal-bg:#e3f3ef;   --teal-ink:#124a43;
+--amber:#b8860b;  --amber-bg:#fbf1dc;  --amber-ink:#5a4206;
+--gray:#8c8b85;   --gray-bg:#efeeea;   --gray-ink:#3d3d3a;
+--white:#b5b3aa;  --white-bg:#fbfbf9;  --white-ink:#3d3d3a;
+--band-a:#fcebe4; --band-b:#ebe8fb; --band-c:#fbf1dc;
+--font-body:"IBM Plex Sans",system-ui,sans-serif; --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+color-scheme:dark;
+--bg:#1b1b19; --paper:#242422; --ink:#ecebe6; --muted:#a9a79f; --line:#3c3b37;
+--purple:#a99cf5; --purple-bg:#2b2750; --purple-ink:#dcd8fb;
+--coral:#e58b63;  --coral-bg:#4a2416;  --coral-ink:#fbd9c9;
+--teal:#5cc4b6;   --teal-bg:#133a35;   --teal-ink:#cdeee8;
+--amber:#dbb34b;  --amber-bg:#3f3110;  --amber-ink:#f5e4b3;
+--gray:#a3a29b;   --gray-bg:#33332f;   --gray-ink:#e3e2dc;
+--white:#6b6a64;  --white-bg:#2a2a27;  --white-ink:#e3e2dc;
+--band-a:#2e1d16; --band-b:#23214a; --band-c:#2e2612;
+}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5}
+.page{max-width:1080px;margin:0 auto;padding:28px 16px 48px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 18px;font-size:14px}
+.sheet{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px;overflow-x:auto}
+svg{display:block;width:100%;height:auto}
+svg.detail,svg.anim{min-width:760px}
+.th{font-size:13px;font-weight:600;font-family:var(--font-body)}
+.ts{font-size:10.5px;font-family:var(--font-body)}
+.num{font-size:10px;font-weight:600;font-family:var(--font-mono)}
+.num-t{fill:#fff}
+.arr{fill:none;stroke:var(--muted);stroke-width:1.5}
+.box .b{stroke-width:1.2}
+.purple .b{fill:var(--purple-bg);stroke:var(--purple)}.purple .th{fill:var(--purple-ink)}.purple .ts{fill:var(--purple)}.purple circle{fill:var(--purple)}
+.coral .b{fill:var(--coral-bg);stroke:var(--coral)}.coral .th{fill:var(--coral-ink)}.coral .ts{fill:var(--coral)}.coral circle{fill:var(--coral)}
+.teal .b{fill:var(--teal-bg);stroke:var(--teal)}.teal .th{fill:var(--teal-ink)}.teal .ts{fill:var(--teal)}.teal circle{fill:var(--teal)}
+.amber .b{fill:var(--amber-bg);stroke:var(--amber)}.amber .th{fill:var(--amber-ink)}.amber .ts{fill:var(--amber)}.amber circle{fill:var(--amber)}
+.gray .b{fill:var(--gray-bg);stroke:var(--gray)}.gray .th{fill:var(--gray-ink)}.gray .ts{fill:var(--gray)}.gray circle{fill:var(--gray)}
+.white .b{fill:var(--white-bg);stroke:var(--white)}.white .th{fill:var(--white-ink)}.white .ts{fill:var(--muted)}.white circle{fill:var(--white)}
+.phase2 .b{stroke-dasharray:5 3}
+.band rect{fill:none;stroke:var(--line);stroke-width:1;stroke-dasharray:3 3}
+.band-a rect{fill:var(--band-a);fill-opacity:.35}
+.band-b rect{fill:var(--band-b);fill-opacity:.35}
+.band-c rect{fill:var(--band-c);fill-opacity:.35}
+.bandlabel{font-size:11px;font-weight:600;fill:var(--muted);letter-spacing:.04em;text-transform:uppercase;font-family:var(--font-body)}
+.note{fill:var(--muted);font-size:10.5px;font-family:var(--font-body)}
+.legend{display:flex;flex-wrap:wrap;gap:10px 18px;margin:14px 0 0;font-size:13px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px;border:1px solid}
+.l-purple::before{background:var(--purple-bg);border-color:var(--purple)}
+.l-coral::before{background:var(--coral-bg);border-color:var(--coral)}
+.l-teal::before{background:var(--teal-bg);border-color:var(--teal)}
+.l-gray::before{background:var(--gray-bg);border-color:var(--gray)}
+.l-amber::before{background:var(--amber-bg);border-color:var(--amber)}
+.l-white::before{background:var(--white-bg);border-color:var(--white)}
+.divider{display:flex;align-items:center;gap:12px;margin:34px 0 18px;color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.06em}
+.divider::before,.divider::after{content:"";flex:1;border-top:1px solid var(--line)}
+.key{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.card{background:var(--paper);border:1px solid var(--line);border-left-width:4px;border-radius:10px;padding:12px 14px}
+.card.wide{grid-column:1 / -1}
+.card.purple{border-left-color:var(--purple)}.card.coral{border-left-color:var(--coral)}.card.teal{border-left-color:var(--teal)}.card.gray{border-left-color:var(--gray)}.card.amber{border-left-color:var(--amber)}
+.card h3{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;margin:0 0 6px}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;border-radius:12px;font:600 12px var(--font-mono);color:#fff;padding:0 7px}
+.purple .badge{background:var(--purple)}.coral .badge{background:var(--coral)}.teal .badge{background:var(--teal)}.gray .badge{background:var(--gray)}.amber .badge{background:var(--amber)}
+.card p{margin:0;color:var(--ink);font-size:14px}
+.card .state{font:500 11px var(--font-mono);color:var(--muted);letter-spacing:.04em;margin-left:auto;text-align:right}
+code{font-family:var(--font-mono);font-size:12.5px;background:var(--gray-bg);padding:1px 5px;border-radius:4px}
+table.dec{border-collapse:collapse;width:100%;font-size:14px}
+table.dec th,table.dec td{text-align:left;padding:6px 8px;border-top:1px solid var(--line);vertical-align:top}
+table.dec th{color:var(--muted);font-weight:500;font-size:12px;letter-spacing:.04em;text-transform:uppercase;border-top:none}
+table.dec th:first-child,table.dec td:first-child{width:72px;white-space:nowrap}
+@media (max-width:480px){.key{grid-template-columns:1fr}}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 10px}
+.bar button{font:500 13px var(--font-body);color:var(--ink);background:var(--gray-bg);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+.bar button[aria-pressed="true"]{background:var(--teal-bg);border-color:var(--teal);color:var(--teal-ink)}
+.bar button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.cap{font-size:13px;color:var(--muted)}
+.anim [data-stage]{opacity:0;transition:opacity .5s ease}
+.anim [data-stage].on{opacity:1}
+.simple [data-s]{opacity:0;transition:opacity .5s ease}
+.simple [data-s].on{opacity:1}
+@media (prefers-reduced-motion: reduce){.anim [data-stage],.simple [data-s]{transition:none}}
+.detail.newonly .box[data-band="B"],.detail.newonly .box[data-band="C"],.detail.newonly .band-b,.detail.newonly .band-c{opacity:.28}
+.detail .box,.detail .band{transition:opacity .35s ease}
+.detail .box.hot .b{stroke-width:3;filter:drop-shadow(0 0 4px var(--teal))}
+.detail .box.hot .b{stroke:var(--teal)}
+.detail .box.dim{opacity:.35}
+.user-notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:14px}
+.user-notes p{margin:0;font-size:14px;color:var(--ink);background:var(--gray-bg);border-radius:10px;padding:12px 14px}
+</style>
+</head>
+<body>
+<div class="page">
+<h1>IMS 2 — New Submission Workflow with Email Triage</h1>
+<p class="sub">Low-fidelity v53, 2026-11-02. Revises whiteboard v52 by adding an email-triage lane upstream of intake. Page 0 is the plain-language view, page 1 the idea in six steps, page 2 builds the map from today's flow, page 3 is the detailed numbered map with a trace and a what's-new toggle, page 4 explains each box and lists the open decisions. Colors mean the same thing on every page.</p>
+<div class="divider">Page 0 · for the people who use it</div>
+<div class="sheet">
+<svg class="user" viewBox="0 0 900 328" role="img" aria-labelledby="tU"><title id="tU">What the system does and what you do</title>
+<defs><marker id="arrowU" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="20" y="22" dominant-baseline="central" style="fill:var(--ink)">What the system does, on its own</text>
+<g class="box coral"><rect class="b" x="20" y="40" width="160" height="70" rx="10"/><text class="th" x="100" y="64" text-anchor="middle" dominant-baseline="central">Reads the email</text><text class="ts" x="100" y="88" text-anchor="middle" dominant-baseline="central">classifies it</text></g>
+<line x1="180" y1="75" x2="195" y2="75" class="arr" marker-end="url(#arrowU)"/>
+<g class="box coral"><rect class="b" x="195" y="40" width="160" height="70" rx="10"/><text class="th" x="275" y="64" text-anchor="middle" dominant-baseline="central">Pulls the facts</text><text class="ts" x="275" y="88" text-anchor="middle" dominant-baseline="central">from every attachment</text></g>
+<line x1="355" y1="75" x2="370" y2="75" class="arr" marker-end="url(#arrowU)"/>
+<g class="box coral"><rect class="b" x="370" y="40" width="160" height="70" rx="10"/><text class="th" x="450" y="64" text-anchor="middle" dominant-baseline="central">Checks the NPI</text><text class="ts" x="450" y="88" text-anchor="middle" dominant-baseline="central">against the registry</text></g>
+<line x1="530" y1="75" x2="545" y2="75" class="arr" marker-end="url(#arrowU)"/>
+<g class="box coral"><rect class="b" x="545" y="40" width="160" height="70" rx="10"/><text class="th" x="625" y="64" text-anchor="middle" dominant-baseline="central">Rates it</text><text class="ts" x="625" y="88" text-anchor="middle" dominant-baseline="central">premium indication</text></g>
+<line x1="705" y1="75" x2="720" y2="75" class="arr" marker-end="url(#arrowU)"/>
+<g class="box coral"><rect class="b" x="720" y="40" width="160" height="70" rx="10"/><text class="th" x="800" y="64" text-anchor="middle" dominant-baseline="central">Drafts the intake</text><text class="ts" x="800" y="88" text-anchor="middle" dominant-baseline="central">ready for your review</text></g>
+<line x1="800" y1="110" x2="800" y2="150" class="arr" marker-end="url(#arrowU)"/>
+<text class="th" x="20" y="135" dominant-baseline="central" style="fill:var(--ink)">What you do</text>
+<g class="box gray"><rect class="b" x="720" y="150" width="160" height="70" rx="10"/><text class="th" x="800" y="174" text-anchor="middle" dominant-baseline="central">Review the draft</text><text class="ts" x="800" y="198" text-anchor="middle" dominant-baseline="central">accept · edit · ask the broker</text></g>
+<line x1="720" y1="185" x2="705" y2="185" class="arr" marker-end="url(#arrowU)"/>
+<g class="box purple"><rect class="b" x="545" y="150" width="160" height="70" rx="10"/><text class="th" x="625" y="174" text-anchor="middle" dominant-baseline="central">Work the submission</text><text class="ts" x="625" y="198" text-anchor="middle" dominant-baseline="central">same screens, pre-filled</text></g>
+<line x1="545" y1="185" x2="530" y2="185" class="arr" marker-end="url(#arrowU)"/>
+<g class="box purple"><rect class="b" x="370" y="150" width="160" height="70" rx="10"/><text class="th" x="450" y="174" text-anchor="middle" dominant-baseline="central">Bind</text><text class="ts" x="450" y="198" text-anchor="middle" dominant-baseline="central">confirm premium and setup</text></g>
+<line x1="370" y1="185" x2="355" y2="185" class="arr" marker-end="url(#arrowU)"/>
+<g class="box amber"><rect class="b" x="195" y="150" width="160" height="70" rx="10"/><text class="th" x="275" y="174" text-anchor="middle" dominant-baseline="central">Post</text><text class="ts" x="275" y="198" text-anchor="middle" dominant-baseline="central">QA batch or Admin, as today</text></g>
+<path d="M800 220 L800 234 L100 234 L100 110" class="arr" stroke-dasharray="4 4" marker-end="url(#arrowU)"/>
+<text class="note" x="115" y="246" dominant-baseline="central">ask the broker → the reply comes back to the same draft</text>
+<g class="box white"><rect class="b" x="20" y="262" width="860" height="52" rx="10"/><text class="th" x="450" y="280" text-anchor="middle" dominant-baseline="central">Nothing lands in IMS 2 until you accept the draft</text><text class="ts" x="450" y="300" text-anchor="middle" dominant-baseline="central">The rating is an indication, not the bound premium · every pulled fact shows where it came from</text></g>
+</svg>
+<div class="user-notes">
+<p><strong>The email does the typing.</strong> The application, CV and loss runs are read for you; the fields show up filled in, each with a link back to the page they came from.</p>
+<p><strong>You still decide.</strong> A draft is not a submission until you accept it. You can fix a field, send the broker questions, or reject it with a reason.</p>
+<p><strong>Rating is a head start, not the answer.</strong> The indication and the proposed setup sit beside the policy fields. What you confirm is what binds.</p>
+</div>
+</div>
+<div class="divider">Page 1 · the idea in six steps</div>
+<div class="sheet">
+<div class="bar"><button type="button" id="simPlay">Replay</button><button type="button" id="simNext">Next step</button><span id="simCap" class="cap"></span></div>
+<svg class="simple" viewBox="0 0 900 200" role="img" aria-labelledby="tS"><title id="tS">Six-step summary</title>
+<defs><marker id="arrowS" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<g data-s="1" class="box gray"><rect class="b" x="20" y="60" width="130" height="80" rx="10"/><text class="th" x="85" y="90" text-anchor="middle" dominant-baseline="central">Email</text><text class="ts" x="85" y="112" text-anchor="middle" dominant-baseline="central">broker sends it</text></g>
+<line data-s="2" x1="150" y1="100" x2="165" y2="100" class="arr" marker-end="url(#arrowS)"/>
+<g data-s="2" class="box coral"><rect class="b" x="165" y="60" width="130" height="80" rx="10"/><text class="th" x="230" y="90" text-anchor="middle" dominant-baseline="central">Triage</text><text class="ts" x="230" y="112" text-anchor="middle" dominant-baseline="central">classify · extract · NPI</text></g>
+<line data-s="3" x1="295" y1="100" x2="310" y2="100" class="arr" marker-end="url(#arrowS)"/>
+<g data-s="3" class="box coral"><rect class="b" x="310" y="60" width="130" height="80" rx="10"/><text class="th" x="375" y="90" text-anchor="middle" dominant-baseline="central">Draft</text><text class="ts" x="375" y="112" text-anchor="middle" dominant-baseline="central">rated · set up · staged</text></g>
+<line data-s="4" x1="440" y1="100" x2="455" y2="100" class="arr" marker-end="url(#arrowS)"/>
+<g data-s="4" class="box gray"><rect class="b" x="455" y="60" width="130" height="80" rx="10"/><text class="th" x="520" y="90" text-anchor="middle" dominant-baseline="central">Review</text><text class="ts" x="520" y="112" text-anchor="middle" dominant-baseline="central">a person accepts</text></g>
+<line data-s="5" x1="585" y1="100" x2="600" y2="100" class="arr" marker-end="url(#arrowS)"/>
+<g data-s="5" class="box purple"><rect class="b" x="600" y="60" width="130" height="80" rx="10"/><text class="th" x="665" y="90" text-anchor="middle" dominant-baseline="central">IMS 2 record</text><text class="ts" x="665" y="112" text-anchor="middle" dominant-baseline="central">open, pre-filled</text></g>
+<line data-s="6" x1="730" y1="100" x2="745" y2="100" class="arr" marker-end="url(#arrowS)"/>
+<g data-s="6" class="box amber"><rect class="b" x="745" y="60" width="130" height="80" rx="10"/><text class="th" x="810" y="90" text-anchor="middle" dominant-baseline="central">Bind & post</text><text class="ts" x="810" y="112" text-anchor="middle" dominant-baseline="central">as today</text></g>
+<text data-s="2" class="note" x="230" y="165" text-anchor="middle">nothing in IMS 2 yet</text>
+<text data-s="3" class="note" x="375" y="165" text-anchor="middle">nothing in IMS 2 yet</text>
+<text data-s="4" class="note" x="520" y="165" text-anchor="middle">the only way in</text>
+<text data-s="5" class="note" x="665" y="165" text-anchor="middle">editable record</text>
+<text data-s="6" class="note" x="810" y="165" text-anchor="middle">locked at post</text>
+</svg>
+</div>
+<div class="divider">Page 2 · build-up from today's flow</div>
+<div class="sheet">
+<div class="bar"><button type="button" id="animPlay">Replay</button><button type="button" id="animNext">Next step</button><span id="animCap" class="cap"></span></div>
+<div id="animHost"></div>
+<div class="legend"><span class="l-coral">Email triage (new, proposes)</span><span class="l-gray">Control / human gate / source</span><span class="l-white">Manual or external</span><span class="l-purple">IMS 2 editable record</span><span class="l-amber">Locked at post</span><span class="l-teal">Google Sheet (legacy)</span></div>
+</div>
+<div class="divider">Page 3 · detailed map</div>
+<div class="sheet">
+<div class="bar"><button type="button" id="detTrace">Trace one email</button><button type="button" id="detNext">Next box</button><button type="button" id="detNew" aria-pressed="false">Show only what's new</button><span id="detCap" class="cap"></span></div>
+<svg class="detail" viewBox="0 0 900 1094" role="img" aria-labelledby="tD">
+<title id="tD">Numbered map of the new submission workflow</title>
+<defs><marker id="arrowD" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<g class="band band-a" data-stage="2"><rect x="14" y="10" width="872" height="450" rx="14"/><text class="bandlabel" x="26" y="26" dominant-baseline="central">A · Email triage — new in v53</text></g>
+<g class="band band-b" data-stage="1"><rect x="14" y="488" width="872" height="330" rx="14"/><text class="bandlabel" x="26" y="504" dominant-baseline="central">B · Intake and policy record (IMS 2) — pre-filled from A</text></g>
+<g class="band band-c" data-stage="1"><rect x="14" y="832" width="872" height="214" rx="14"/><text class="bandlabel" x="26" y="848" dominant-baseline="central">C · Post and output — unchanged from v52</text></g>
+<path d="M200 78 L230 78" class="arr" data-stage="2" marker-end="url(#arrowD)"/>
+<path d="M420 78 L450 78" class="arr" data-stage="3" marker-end="url(#arrowD)"/>
+<path d="M660 78 L690 78" class="arr" data-stage="3" marker-end="url(#arrowD)"/>
+<path d="M260 106 L260 130 L115 130 L115 160" class="arr" data-stage="2" marker-end="url(#arrowD)"/>
+<text class="note" x="122" y="118" dominant-baseline="central" data-stage=2>not a submission</text>
+<path d="M325 106 L325 160" class="arr" data-stage="2" marker-end="url(#arrowD)"/>
+<text class="note" x="332" y="136" dominant-baseline="central" data-stage=2>review</text>
+<path d="M420 188 L435 188 L435 130 L480 130 L480 106" class="arr" data-stage="3" marker-end="url(#arrowD)"/>
+<text class="note" x="441" y="117" dominant-baseline="central" data-stage=3>confirmed</text>
+<path d="M780 106 L780 136 L555 136 L555 146" class="arr" data-stage="3" marker-end="url(#arrowD)"/>
+<path d="M655 188 L690 188" class="arr" data-stage="3" marker-end="url(#arrowD)"/>
+<text class="note" x="662" y="180" dominant-baseline="central" data-stage=3>yes</text>
+<path d="M555 230 L555 250 L115 250 L115 270" class="arr" data-stage="4" marker-end="url(#arrowD)"/>
+<text class="note" x="122" y="238" dominant-baseline="central" data-stage=4>no · new intake</text>
+<path d="M200 298 L230 298" class="arr" data-stage="4" marker-end="url(#arrowD)"/>
+<path d="M420 298 L450 298" class="arr" data-stage="4" marker-end="url(#arrowD)"/>
+<path d="M660 298 L690 298" class="arr" data-stage="4" marker-end="url(#arrowD)"/>
+<path d="M780 326 L780 380" class="arr" data-stage="5" marker-end="url(#arrowD)"/>
+<path d="M690 408 L660 408" class="arr" data-stage="5" marker-end="url(#arrowD)"/>
+<path d="M450 408 L420 408" class="arr" data-stage="5" marker-end="url(#arrowD)"/>
+<text class="note" x="435" y="368" text-anchor="middle" dominant-baseline="central" data-stage=5>follow-up</text>
+<path d="M230 408 L18 408 L18 78 L30 78" class="arr" data-stage="5" stroke-dasharray="4 4" marker-end="url(#arrowD)"/>
+<text class="note" x="40" y="424" dominant-baseline="central" data-stage=5>broker reply → mailbox</text>
+<path d="M555 436 L555 470 L325 470 L325 520" class="arr" data-stage="5" marker-end="url(#arrowD)"/>
+<text class="note" x="334" y="486" dominant-baseline="central" data-stage=5>accept → creates the record</text>
+<path d="M870 188 L884 188 L884 548 L870 548" class="arr" data-stage="3" marker-end="url(#arrowD)"/>
+<text class="note" transform="translate(879 440) rotate(-90)" text-anchor="middle" data-stage=3>adds to the existing record</text>
+<path d="M200 548 L230 548" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<path d="M420 548 L450 548" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<path d="M660 548 L690 548" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<path d="M115 630 L115 600 L290 600 L290 576" class="arr" data-stage="1" stroke-dasharray="4 4" marker-end="url(#arrowD)"/>
+<path d="M325 630 L325 576" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<text class="note" x="332" y="606" dominant-baseline="central" data-stage=1>POST endorsements</text>
+<path d="M780 576 L780 616" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<path d="M680 658 L640 658" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<text class="note" x="644" y="672" dominant-baseline="central" data-stage=1>no · closes</text>
+<path d="M780 700 L780 740" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<text class="note" x="787" y="722" dominant-baseline="central" data-stage=1>yes</text>
+<path d="M600 686 L600 720 L720 720 L720 740" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<text class="note" x="608" y="712" dominant-baseline="central" data-stage=1>reinstate</text>
+<path d="M690 768 L440 768 L440 590 L400 590 L400 576" class="arr" data-stage="1" stroke-dasharray="4 4" marker-end="url(#arrowD)"/>
+<text class="note" x="448" y="758" dominant-baseline="central" data-stage=1>admin override → Open</text>
+<path d="M740 796 L740 830 L325 830 L325 864" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<path d="M555 830 L555 864" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<path d="M800 796 L800 864" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<path d="M325 920 L325 946 L520 946 L520 974" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<path d="M555 920 L555 974" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<path d="M450 1002 L420 1002" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<path d="M230 1002 L200 1002" class="arr" data-stage="1" marker-end="url(#arrowD)"/>
+<g class="box gray" data-n="1" data-band="A" data-stage="2">
+<rect class="b" x="30" y="50" width="170" height="56" rx="8"/>
+<text class="th" x="115" y="69" text-anchor="middle" dominant-baseline="central">Mailbox</text>
+<text class="ts" x="115" y="89" text-anchor="middle" dominant-baseline="central">Gmail · watched inbox</text>
+<circle cx="30" cy="50" r="11"/><text class="num num-t" x="30" y="50" text-anchor="middle" dominant-baseline="central">1</text>
+</g>
+<g class="box coral" data-n="2" data-band="A" data-stage="2">
+<rect class="b" x="230" y="50" width="190" height="56" rx="8"/>
+<text class="th" x="325" y="69" text-anchor="middle" dominant-baseline="central">Classify</text>
+<text class="ts" x="325" y="89" text-anchor="middle" dominant-baseline="central">rules + LLM · 3 outcomes</text>
+<circle cx="230" cy="50" r="11"/><text class="num num-t" x="230" y="50" text-anchor="middle" dominant-baseline="central">2</text>
+</g>
+<g class="box white" data-n="3" data-band="A" data-stage="2">
+<rect class="b" x="30" y="160" width="170" height="56" rx="8"/>
+<text class="th" x="115" y="179" text-anchor="middle" dominant-baseline="central">Archive</text>
+<text class="ts" x="115" y="199" text-anchor="middle" dominant-baseline="central">not a submission · labeled</text>
+<circle cx="30" cy="160" r="11"/><text class="num num-t" x="30" y="160" text-anchor="middle" dominant-baseline="central">3</text>
+</g>
+<g class="box gray" data-n="4" data-band="A" data-stage="2">
+<rect class="b" x="230" y="160" width="190" height="56" rx="8"/>
+<text class="th" x="325" y="179" text-anchor="middle" dominant-baseline="central">Triage queue</text>
+<text class="ts" x="325" y="199" text-anchor="middle" dominant-baseline="central">review required · human</text>
+<circle cx="230" cy="160" r="11"/><text class="num num-t" x="230" y="160" text-anchor="middle" dominant-baseline="central">4</text>
+</g>
+<g class="box coral" data-n="5" data-band="A" data-stage="3">
+<rect class="b" x="450" y="50" width="210" height="56" rx="8"/>
+<text class="th" x="555" y="69" text-anchor="middle" dominant-baseline="central">Parse &amp; extract</text>
+<text class="ts" x="555" y="89" text-anchor="middle" dominant-baseline="central">PDF · DOCX · scans · evidence</text>
+<circle cx="450" cy="50" r="11"/><text class="num num-t" x="450" y="50" text-anchor="middle" dominant-baseline="central">5</text>
+</g>
+<g class="box coral" data-n="6" data-band="A" data-stage="3">
+<rect class="b" x="690" y="50" width="180" height="56" rx="8"/>
+<text class="th" x="780" y="69" text-anchor="middle" dominant-baseline="central">NPI verify</text>
+<text class="ts" x="780" y="89" text-anchor="middle" dominant-baseline="central">CMS registry · match / mismatch</text>
+<circle cx="690" cy="50" r="11"/><text class="num num-t" x="690" y="50" text-anchor="middle" dominant-baseline="central">6</text>
+</g>
+<g class="box coral" data-n="7" data-band="A" data-stage="3">
+<path class="b" d="M555 146 L655 188 L555 230 L455 188 Z"/>
+<text class="th" x="555" y="179" text-anchor="middle" dominant-baseline="central">Match existing?</text>
+<text class="ts" x="555" y="199" text-anchor="middle" dominant-baseline="central">thread · NPI · insured</text>
+<circle cx="473" cy="152" r="11"/><text class="num num-t" x="473" y="152" text-anchor="middle" dominant-baseline="central">7</text>
+</g>
+<g class="box purple" data-n="8" data-band="A" data-stage="3">
+<rect class="b" x="690" y="160" width="180" height="56" rx="8"/>
+<text class="th" x="780" y="179" text-anchor="middle" dominant-baseline="central">Attach to existing</text>
+<text class="ts" x="780" y="199" text-anchor="middle" dominant-baseline="central">docs + new assessment vN</text>
+<circle cx="690" cy="160" r="11"/><text class="num num-t" x="690" y="160" text-anchor="middle" dominant-baseline="central">8</text>
+</g>
+<g class="box coral" data-n="9" data-band="A" data-stage="4">
+<rect class="b" x="30" y="270" width="170" height="56" rx="8"/>
+<text class="th" x="115" y="289" text-anchor="middle" dominant-baseline="central">Synthesis</text>
+<text class="ts" x="115" y="309" text-anchor="middle" dominant-baseline="central">submission context vN</text>
+<circle cx="30" cy="270" r="11"/><text class="num num-t" x="30" y="270" text-anchor="middle" dominant-baseline="central">9</text>
+</g>
+<g class="box coral" data-n="10" data-band="A" data-stage="4">
+<rect class="b" x="230" y="270" width="190" height="56" rx="8"/>
+<text class="th" x="325" y="289" text-anchor="middle" dominant-baseline="central">UW analysis</text>
+<text class="ts" x="325" y="309" text-anchor="middle" dominant-baseline="central">skills · risks · gaps · questions</text>
+<circle cx="230" cy="270" r="11"/><text class="num num-t" x="230" y="270" text-anchor="middle" dominant-baseline="central">10</text>
+</g>
+<g class="box coral" data-n="11" data-band="A" data-stage="4">
+<rect class="b" x="450" y="270" width="210" height="56" rx="8"/>
+<text class="th" x="555" y="289" text-anchor="middle" dominant-baseline="central">Rate</text>
+<text class="ts" x="555" y="309" text-anchor="middle" dominant-baseline="central">indication · class · credits</text>
+<circle cx="450" cy="270" r="11"/><text class="num num-t" x="450" y="270" text-anchor="middle" dominant-baseline="central">11</text>
+</g>
+<g class="box coral" data-n="12" data-band="A" data-stage="4">
+<rect class="b" x="690" y="270" width="180" height="56" rx="8"/>
+<text class="th" x="780" y="289" text-anchor="middle" dominant-baseline="central">Policy setup</text>
+<text class="ts" x="780" y="309" text-anchor="middle" dominant-baseline="central">term · limits · retro · billing</text>
+<circle cx="690" cy="270" r="11"/><text class="num num-t" x="690" y="270" text-anchor="middle" dominant-baseline="central">12</text>
+</g>
+<g class="box coral phase2" data-n="13" data-band="A" data-stage="5">
+<rect class="b" x="690" y="380" width="180" height="56" rx="8"/>
+<text class="th" x="780" y="399" text-anchor="middle" dominant-baseline="central">Intake draft</text>
+<text class="ts" x="780" y="419" text-anchor="middle" dominant-baseline="central">intake shape · not saved yet</text>
+<circle cx="690" cy="380" r="11"/><text class="num num-t" x="690" y="380" text-anchor="middle" dominant-baseline="central">13</text>
+</g>
+<g class="box gray" data-n="14" data-band="A" data-stage="5">
+<rect class="b" x="450" y="380" width="210" height="56" rx="8"/>
+<text class="th" x="555" y="399" text-anchor="middle" dominant-baseline="central">Underwriter review</text>
+<text class="ts" x="555" y="419" text-anchor="middle" dominant-baseline="central">accept · edit · follow-up · reject</text>
+<circle cx="450" cy="380" r="11"/><text class="num num-t" x="450" y="380" text-anchor="middle" dominant-baseline="central">14</text>
+</g>
+<g class="box white" data-n="15" data-band="A" data-stage="5">
+<rect class="b" x="230" y="380" width="190" height="56" rx="8"/>
+<text class="th" x="325" y="399" text-anchor="middle" dominant-baseline="central">Follow-up email</text>
+<text class="ts" x="325" y="419" text-anchor="middle" dominant-baseline="central">questions to broker · reply loops</text>
+<circle cx="230" cy="380" r="11"/><text class="num num-t" x="230" y="380" text-anchor="middle" dominant-baseline="central">15</text>
+</g>
+<g class="box white" data-n="16" data-band="B" data-stage="1">
+<rect class="b" x="30" y="520" width="170" height="56" rx="8"/>
+<text class="th" x="115" y="539" text-anchor="middle" dominant-baseline="central">Manual intake</text>
+<text class="ts" x="115" y="559" text-anchor="middle" dominant-baseline="central">phone · portal · broker</text>
+<circle cx="30" cy="520" r="11"/><text class="num num-t" x="30" y="520" text-anchor="middle" dominant-baseline="central">16</text>
+</g>
+<g class="box purple" data-n="17" data-band="B" data-stage="1">
+<rect class="b" x="230" y="520" width="190" height="56" rx="8"/>
+<text class="th" x="325" y="539" text-anchor="middle" dominant-baseline="central">IMS 2 · Open</text>
+<text class="ts" x="325" y="559" text-anchor="middle" dominant-baseline="central">sub-nnnnnnnn · pre-filled</text>
+<circle cx="230" cy="520" r="11"/><text class="num num-t" x="230" y="520" text-anchor="middle" dominant-baseline="central">17</text>
+</g>
+<g class="box white phase2" data-n="18" data-band="B" data-stage="1">
+<rect class="b" x="450" y="520" width="210" height="56" rx="8"/>
+<text class="th" x="555" y="539" text-anchor="middle" dominant-baseline="central">AoDocs</text>
+<text class="ts" x="555" y="559" text-anchor="middle" dominant-baseline="central">manual · link field only</text>
+<circle cx="450" cy="520" r="11"/><text class="num num-t" x="450" y="520" text-anchor="middle" dominant-baseline="central">18</text>
+</g>
+<g class="box purple" data-n="19" data-band="B" data-stage="1">
+<rect class="b" x="690" y="520" width="180" height="56" rx="8"/>
+<text class="th" x="780" y="539" text-anchor="middle" dominant-baseline="central">IMS 2 · Policy info</text>
+<text class="ts" x="780" y="559" text-anchor="middle" dominant-baseline="central">rating + setup as indication</text>
+<circle cx="690" cy="520" r="11"/><text class="num num-t" x="690" y="520" text-anchor="middle" dominant-baseline="central">19</text>
+</g>
+<g class="box white phase2" data-n="20" data-band="B" data-stage="1">
+<rect class="b" x="30" y="630" width="170" height="56" rx="8"/>
+<text class="th" x="115" y="649" text-anchor="middle" dominant-baseline="central">Renewal</text>
+<text class="ts" x="115" y="669" text-anchor="middle" dominant-baseline="central">not built yet</text>
+<circle cx="30" cy="630" r="11"/><text class="num num-t" x="30" y="630" text-anchor="middle" dominant-baseline="central">20</text>
+</g>
+<g class="box purple" data-n="21" data-band="B" data-stage="1">
+<rect class="b" x="230" y="630" width="190" height="56" rx="8"/>
+<text class="th" x="325" y="649" text-anchor="middle" dominant-baseline="central">Endorsement</text>
+<text class="ts" x="325" y="669" text-anchor="middle" dominant-baseline="central">parent bound · inherits #</text>
+<circle cx="230" cy="630" r="11"/><text class="num num-t" x="230" y="630" text-anchor="middle" dominant-baseline="central">21</text>
+</g>
+<g class="box purple" data-n="22" data-band="B" data-stage="1">
+<rect class="b" x="450" y="630" width="190" height="56" rx="8"/>
+<text class="th" x="545" y="649" text-anchor="middle" dominant-baseline="central">IMS 2 · Closed</text>
+<text class="ts" x="545" y="669" text-anchor="middle" dominant-baseline="central">reason required · reinstate</text>
+<circle cx="450" cy="630" r="11"/><text class="num num-t" x="450" y="630" text-anchor="middle" dominant-baseline="central">22</text>
+</g>
+<g class="box white" data-n="23" data-band="B" data-stage="1">
+<path class="b" d="M780 616 L880 658 L780 700 L680 658 Z"/>
+<text class="th" x="780" y="649" text-anchor="middle" dominant-baseline="central">Bound?</text>
+<text class="ts" x="780" y="669" text-anchor="middle" dominant-baseline="central">gate · premium &gt; 0</text>
+<circle cx="698" cy="622" r="11"/><text class="num num-t" x="698" y="622" text-anchor="middle" dominant-baseline="central">23</text>
+</g>
+<g class="box amber" data-n="24" data-band="B" data-stage="1">
+<rect class="b" x="690" y="740" width="180" height="56" rx="8"/>
+<text class="th" x="780" y="759" text-anchor="middle" dominant-baseline="central">IMS 2 · Bound 🔒</text>
+<text class="ts" x="780" y="779" text-anchor="middle" dominant-baseline="central">locked · DPL-800 #</text>
+<circle cx="690" cy="740" r="11"/><text class="num num-t" x="690" y="740" text-anchor="middle" dominant-baseline="central">24</text>
+</g>
+<g class="box purple" data-n="25" data-band="C" data-stage="1">
+<rect class="b" x="230" y="864" width="190" height="56" rx="8"/>
+<text class="th" x="325" y="883" text-anchor="middle" dominant-baseline="central">QA batch</text>
+<text class="ts" x="325" y="903" text-anchor="middle" dominant-baseline="central">binding → approve</text>
+<circle cx="230" cy="864" r="11"/><text class="num num-t" x="230" y="864" text-anchor="middle" dominant-baseline="central">25</text>
+</g>
+<g class="box purple" data-n="26" data-band="C" data-stage="1">
+<rect class="b" x="450" y="864" width="210" height="56" rx="8"/>
+<text class="th" x="555" y="883" text-anchor="middle" dominant-baseline="central">Admin · Post</text>
+<text class="ts" x="555" y="903" text-anchor="middle" dominant-baseline="central">admin-only · once per record</text>
+<circle cx="450" cy="864" r="11"/><text class="num num-t" x="450" y="864" text-anchor="middle" dominant-baseline="central">26</text>
+</g>
+<g class="box purple" data-n="27" data-band="C" data-stage="1">
+<rect class="b" x="690" y="864" width="180" height="56" rx="8"/>
+<text class="th" x="780" y="883" text-anchor="middle" dominant-baseline="central">Payment</text>
+<text class="ts" x="780" y="903" text-anchor="middle" dominant-baseline="central">transaction journal · batch</text>
+<circle cx="690" cy="864" r="11"/><text class="num num-t" x="690" y="864" text-anchor="middle" dominant-baseline="central">27</text>
+</g>
+<g class="box amber" data-n="28" data-band="C" data-stage="1">
+<rect class="b" x="450" y="974" width="210" height="56" rx="8"/>
+<text class="th" x="555" y="993" text-anchor="middle" dominant-baseline="central">Bordereaux 🔒</text>
+<text class="ts" x="555" y="1013" text-anchor="middle" dominant-baseline="central">posted · append-only · output</text>
+<circle cx="450" cy="974" r="11"/><text class="num num-t" x="450" y="974" text-anchor="middle" dominant-baseline="central">28</text>
+</g>
+<g class="box white" data-n="29" data-band="C" data-stage="1">
+<rect class="b" x="230" y="974" width="190" height="56" rx="8"/>
+<text class="th" x="325" y="993" text-anchor="middle" dominant-baseline="central">Export</text>
+<text class="ts" x="325" y="1013" text-anchor="middle" dominant-baseline="central">bordereaux/export.csv</text>
+<circle cx="230" cy="974" r="11"/><text class="num num-t" x="230" y="974" text-anchor="middle" dominant-baseline="central">29</text>
+</g>
+<g class="box teal" data-n="30" data-band="C" data-stage="1">
+<rect class="b" x="30" y="974" width="170" height="56" rx="8"/>
+<text class="th" x="115" y="993" text-anchor="middle" dominant-baseline="central">Bordereaux</text>
+<text class="ts" x="115" y="1013" text-anchor="middle" dominant-baseline="central">Google Sheet · A/R legacy</text>
+<circle cx="30" cy="974" r="11"/><text class="num num-t" x="30" y="974" text-anchor="middle" dominant-baseline="central">30</text>
+</g>
+<text class="note" x="22" y="1064">Solid line = flow · dashed line = loop or override · dashed border = staged or not built · lock = posted, immutable</text>
+<text class="note" x="22" y="1082">Platform workstreams unchanged from v52: A/R statement*, credentialing, loss runs · backups, dev env, docs, monitoring, controls, continuity, contingency</text>
+</svg>
+<div class="legend"><span class="l-coral">Email triage (new, proposes)</span><span class="l-gray">Control / human gate / source</span><span class="l-white">Manual or external</span><span class="l-purple">IMS 2 editable record</span><span class="l-amber">Locked at post</span><span class="l-teal">Google Sheet (legacy)</span></div>
+</div>
+<div class="divider">Page 4 · what each box is</div>
+<div class="key">
+<div class="card gray wide"><h3>What changed from v52</h3><p>A new email-triage lane (band A) sits upstream of intake. It reads the mailbox, classifies, extracts with evidence, verifies the NPI, builds a versioned context, runs the underwriting skills, rates, and proposes the policy setup. It ends in a draft that a person accepts, edits, questions or rejects. Manual intake stays. The IMS 2 record (boxes 17 and 19) is the same record as today, pre-filled, with the rating and setup shown as an indication. Bind, post, bordereaux, endorsement, close and reinstate are unchanged. Renewal is still not built.</p></div>
+<div class="card coral wide"><h3>Two rules the lane obeys</h3><p><strong>Triage never writes to IMS 2.</strong> It produces a draft outside the intake DB; only the reviewer's accept creates the editable record, and nothing from triage ever reaches a journal directly. <strong>A proposal is not a value.</strong> The rating is an indication and the setup is a proposal until the underwriter confirms them in policy info; the confirmed values are what satisfy the bind gate and post to the policy journal.</p></div>
+<div class="card gray"><h3><span class="badge">1</span>Mailbox<span class="state">NEW · SOURCE</span></h3><p>The shared submissions mailbox is watched (push, polling fallback). Every new message and attachment is read; nothing is sent, deleted or moved by the system.</p></div>
+<div class="card coral"><h3><span class="badge">2</span>Classify<span class="state">NEW</span></h3><p>Rules first, then the model: SUBMISSION, NOT_SUBMISSION or REVIEW_REQUIRED. Each outcome carries a confidence and the reason. Only SUBMISSION continues on its own.</p></div>
+<div class="card gray"><h3><span class="badge">3</span>Archive<span class="state">NEW</span></h3><p>A label is applied in Gmail and the message is logged. No IMS 2 record is created. Anyone can reopen it from the triage dashboard.</p></div>
+<div class="card gray"><h3><span class="badge">4</span>Triage queue<span class="state">NEW · GATE</span></h3><p>Low-confidence or odd messages wait here. A person confirms (continues to parse) or archives. Nothing downstream runs until they decide.</p></div>
+<div class="card coral"><h3><span class="badge">5</span>Parse &amp; extract<span class="state">NEW</span></h3><p>Attachments are opened (OCR for scans) and the application fields are extracted: insured, specialty, state, limits, retro date, claims history, prior carrier. Every field keeps a link to the page and line it came from.</p></div>
+<div class="card coral"><h3><span class="badge">6</span>NPI verify<span class="state">NEW</span></h3><p>The NPI registry is queried by number or name. Taxonomy, license state and practice address are compared with the application; mismatches become findings, not blockers.</p></div>
+<div class="card coral"><h3><span class="badge">7</span>Match existing?<span class="state">NEW · GATE</span></h3><p>Is this email about a record IMS 2 already has? Matched by thread, then NPI, then insured name + state. Yes: attach. No: a new intake draft.</p></div>
+<div class="card purple"><h3><span class="badge">8</span>Attach to existing<span class="state">NEW</span></h3><p>The documents and a new assessment version are attached to the existing submission (open or bound). A change request on a bound policy is routed to the Endorsement path; it never edits the bound row.</p></div>
+<div class="card coral"><h3><span class="badge">9</span>Synthesis<span class="state">NEW</span></h3><p>One consolidated, versioned context: extracted facts with sources, NPI result, conflicts between documents, missing items. This is the input to everything that follows.</p></div>
+<div class="card coral"><h3><span class="badge">10</span>UW analysis<span class="state">NEW</span></h3><p>The underwriting skills (DPL manual rules) run over the context: eligibility, risk indicators, completeness, inconsistencies, follow-up questions. Output is a versioned analysis report.</p></div>
+<div class="card coral"><h3><span class="badge">11</span>Rate<span class="state">NEW</span></h3><p>A premium indication from the rating rules: specialty class, territory, limits, claims-made step, credits and debits, surcharges. It is an indication, never the bound premium.</p></div>
+<div class="card coral"><h3><span class="badge">12</span>Policy setup<span class="state">NEW</span></h3><p>The proposed policy setup: effective and expiration dates, limits, retro date, specialty class, entity or vicarious coverage, billing option. Proposed values only, each with its source or rule.</p></div>
+<div class="card coral"><h3><span class="badge">13</span>Intake draft<span class="state">NEW · STAGED</span></h3><p>Everything above, mapped to the shape of the intake DB: submission header, the POL details row, the insured master, locations and contacts, plus the rating and setup proposal and the assessment version. Held outside IMS 2 until accepted.</p></div>
+<div class="card gray"><h3><span class="badge">14</span>Underwriter review<span class="state">NEW · GATE</span></h3><p>A person decides. Accept creates the IMS 2 submission pre-filled. Edit corrects fields first (each edit audited against the extracted value). Follow-up drafts questions to the broker. Reject archives with a reason.</p></div>
+<div class="card gray"><h3><span class="badge">15</span>Follow-up email<span class="state">NEW</span></h3><p>The follow-up questions go out to the broker (sent by the person, or auto-sent per D-T6). The reply lands in the same mailbox, matches the same draft by thread, and produces a new context version.</p></div>
+<div class="card gray"><h3><span class="badge">16</span>Manual intake<span class="state">UNCHANGED</span></h3><p>Submissions that do not arrive by email are still keyed in by hand. Both paths create the same IMS 2 record.</p></div>
+<div class="card purple"><h3><span class="badge">17</span>IMS 2 · Open<span class="state">CHANGED</span></h3><p>The editable header and its first details row. From the triage path it is created pre-filled, with each field marked as extracted, edited by the reviewer, or keyed by hand.</p></div>
+<div class="card gray"><h3><span class="badge">18</span>AoDocs<span class="state">UNCHANGED</span></h3><p>Still a manual link field. Triage stores its own copies of the attachments with the draft; filing in AoDocs stays a human step (D-T5).</p></div>
+<div class="card purple"><h3><span class="badge">19</span>IMS 2 · Policy info<span class="state">CHANGED</span></h3><p>Policy info as today, plus the rating indication and the proposed setup shown beside the fields. The underwriter confirms or changes them; the confirmed values are what bind.</p></div>
+<div class="card gray"><h3><span class="badge">20</span>Renewal<span class="state">UNCHANGED</span></h3><p>Still not built. When it is, a renewal email will match the prior term through box 7 and open a new header chained by parent_id / chain_id.</p></div>
+<div class="card purple"><h3><span class="badge">21</span>Endorsement<span class="state">UNCHANGED</span></h3><p>POST /:id/endorsements on a bound parent. Creates a new details row (END) under the header; it then goes through policy info and bind like any transaction.</p></div>
+<div class="card purple"><h3><span class="badge">22</span>IMS 2 · Closed<span class="state">UNCHANGED</span></h3><p>Not bound: the user closes with a reason. Reinstate returns it to Bound.</p></div>
+<div class="card gray"><h3><span class="badge">23</span>Bound?<span class="state">UNCHANGED</span></h3><p>Gate: intake, insured, broker, term and premium &gt; 0 (END: any). The triage proposal does not satisfy the gate by itself; the underwriter&#x27;s confirmed values do.</p></div>
+<div class="card amber"><h3><span class="badge">24</span>IMS 2 · Bound 🔒<span class="state">UNCHANGED</span></h3><p>Locked. DPL-800 number assigned (END inherits). Admin override returns it to Open. Bind posts the policy journal per Addendum C.</p></div>
+<div class="card purple"><h3><span class="badge">25</span>QA batch<span class="state">UNCHANGED</span></h3><p>Operators send bound rows to QA; the reviewer approves (posts) or rejects (back to draft).</p></div>
+<div class="card purple"><h3><span class="badge">26</span>Admin · Post<span class="state">UNCHANGED</span></h3><p>Admin posts a single bound record once.</p></div>
+<div class="card purple"><h3><span class="badge">27</span>Payment<span class="state">UNCHANGED</span></h3><p>Payments, credits, refunds and adjustments post through batches into the transaction journal (Addendum C). Not touched by triage.</p></div>
+<div class="card amber"><h3><span class="badge">28</span>Bordereaux 🔒<span class="state">UNCHANGED</span></h3><p>Append-only, parent first. Per SL-L11 it is an output of the journals and is never read to create a record.</p></div>
+<div class="card gray"><h3><span class="badge">29</span>Export<span class="state">UNCHANGED</span></h3><p>73-column export, byte-identical headers.</p></div>
+<div class="card teal"><h3><span class="badge">30</span>Bordereaux<span class="state">UNCHANGED</span></h3><p>The legacy Google Sheet. A/R statement and A/R management still live there until the journals cut over.</p></div>
+<div class="card gray wide"><h3>Open decisions</h3><table class="dec"><thead><tr><th>#</th><th>Question</th><th>Default</th></tr></thead><tbody><tr><td><code>D-T1</code></td><td>Accept creates the IMS 2 record automatically, or opens the intake form pre-filled for the user to save</td><td>Creates it; the user lands on policy info</td></tr><tr><td><code>D-T2</code></td><td>Rating source: the DPL underwriting-manual skill, or the Q2B rating engine</td><td>Skill now; engine when it covers all specialties</td></tr><tr><td><code>D-T3</code></td><td>Which mailboxes are watched, and whether NOT_SUBMISSION is archived or only labeled</td><td>One submissions mailbox; label only</td></tr><tr><td><code>D-T4</code></td><td>Match order for existing records</td><td>Thread id, then NPI, then insured name + state</td></tr><tr><td><code>D-T5</code></td><td>Where attachments live</td><td>Secure storage with the draft; AoDocs link stays manual</td></tr><tr><td><code>D-T6</code></td><td>Follow-up emails: auto-sent or sent by the reviewer</td><td>Drafted by the system, sent by the reviewer</td></tr><tr><td><code>D-T7</code></td><td>Confidence below which a SUBMISSION still goes to the triage queue</td><td>0.8</td></tr></tbody></table></div>
+</div>
+</div>
+<script>
+(function(){
+var svg=document.querySelector('svg.simple'); if(!svg) return;
+var caps=['','1 · A broker emails the application','2 · Triage classifies it, pulls the facts, checks the NPI','3 · The draft is rated and set up, and staged outside IMS 2','4 · A person reviews: accept, edit, ask, or reject','5 · Accept creates the IMS 2 record, pre-filled','6 · Bind and post exactly as today'];
+var max=6, step=0, timer=null, cap=document.getElementById('simCap');
+function show(n){ step=n; svg.querySelectorAll('[data-s]').forEach(function(el){ el.classList.toggle('on', +el.getAttribute('data-s')<=n); }); cap.textContent=caps[n]||''; }
+function play(){ clearInterval(timer); show(0); var k=0; timer=setInterval(function(){ k++; show(k); if(k>=max) clearInterval(timer); },1000); }
+document.getElementById('simPlay').addEventListener('click',play);
+document.getElementById('simNext').addEventListener('click',function(){ clearInterval(timer); show(step>=max?1:step+1); });
+if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){ show(max); } else if('IntersectionObserver' in window){ var io=new IntersectionObserver(function(es){ if(es[0].isIntersecting){ io.disconnect(); play(); } },{threshold:0.25}); io.observe(svg); } else { play(); }
+})();
+(function(){
+var src=document.querySelector('svg.detail'), host=document.getElementById('animHost'); if(!src||!host) return;
+var c=src.cloneNode(true); c.setAttribute('class','anim'); c.setAttribute('aria-labelledby','tA'); c.querySelector('title').id='tA'; c.querySelector('title').textContent='Animated build-up of the workflow';
+c.querySelector('defs').remove();
+c.querySelectorAll('.ts, circle, .num, text.note:not(.keep)').forEach(function(e){ e.remove(); });
+host.appendChild(c);
+c.querySelectorAll('g.box').forEach(function(g){ var t=g.querySelector('.th'); var b=g.querySelector('.b').getBBox(); t.setAttribute('y', b.y+b.height/2); });
+})();
+(function(){
+var svg=document.querySelector('svg.anim'); if(!svg) return;
+var caps=['','1 · Today (v52): manual intake, the IMS 2 record, bind, post, bordereaux','2 · New: the mailbox is read and each email is classified; doubtful ones wait for a person','3 · New: attachments are parsed with evidence, the NPI is verified, and the email is matched to any existing record','4 · New: a versioned context, the underwriting skills, a rating indication and a proposed setup','5 · New: a staged draft that a person accepts, edits, questions or rejects; accept creates the record'];
+var max=5, step=0, timer=null, cap=document.getElementById('animCap');
+function show(n){ step=n; svg.querySelectorAll('[data-stage]').forEach(function(el){ el.classList.toggle('on', +el.getAttribute('data-stage')<=n); }); cap.textContent=caps[n]||''; }
+function play(){ clearInterval(timer); show(0); var k=0; timer=setInterval(function(){ k++; show(k); if(k>=max) clearInterval(timer); },1300); }
+document.getElementById('animPlay').addEventListener('click',play);
+document.getElementById('animNext').addEventListener('click',function(){ clearInterval(timer); show(step>=max?1:step+1); });
+if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){ show(max); } else if('IntersectionObserver' in window){ var io=new IntersectionObserver(function(es){ if(es[0].isIntersecting){ io.disconnect(); play(); } },{threshold:0.25}); io.observe(svg); } else { play(); }
+})();
+(function(){
+var svg=document.querySelector('svg.detail'); if(!svg) return;
+var btnNew=document.getElementById('detNew'), btnTrace=document.getElementById('detTrace'), btnNext=document.getElementById('detNext'), cap=document.getElementById('detCap');
+var trace=[[1, "A broker emails an application with a PDF and a CV"], [2, "Classified SUBMISSION, confidence 0.94"], [5, "Fields pulled from the PDF; each one keeps its page and line"], [6, "NPI found; taxonomy matches the stated specialty"], [7, "No thread, NPI or insured match: this is new"], [9, "Context v1 built: facts, sources, one conflict (two retro dates)"], [10, "Skills run: eligible; conflict flagged; two follow-up questions"], [11, "Indication: class, territory, step factor, credits applied"], [12, "Proposed term, limits, retro date, billing option"], [13, "Draft staged in the intake-DB shape; nothing saved to IMS 2"], [14, "Underwriter fixes the retro date, accepts"], [17, "IMS 2 submission created, pre-filled, sub-nnnnnnnn"], [19, "Policy info shows the indication; underwriter confirms premium and setup"], [23, "Gate passes on the confirmed values"], [24, "Bound, DPL-800 number assigned, policy journal posted"], [26, "Admin posts the record"], [28, "Bordereaux row written, append-only"], [30, "Export lands in the Google Sheet as today"]];
+var i=-1, timer=null;
+function boxes(){ return svg.querySelectorAll('.box[data-n]'); }
+function clear(){ boxes().forEach(function(b){ b.classList.remove('hot','dim'); }); cap.textContent=''; i=-1; clearInterval(timer); }
+function step(k){ i=k; var n=trace[k][0]; boxes().forEach(function(b){ var on=+b.getAttribute('data-n')===n; b.classList.toggle('hot',on); b.classList.toggle('dim',!on); }); cap.textContent='Box '+n+' · '+trace[k][1]; }
+btnNew.addEventListener('click',function(){ var on=svg.classList.toggle('newonly'); btnNew.setAttribute('aria-pressed',on?'true':'false'); });
+btnTrace.addEventListener('click',function(){ clear(); var k=0; step(0); timer=setInterval(function(){ k++; if(k>=trace.length){ clearInterval(timer); setTimeout(clear,1500); return; } step(k); },1400); });
+btnNext.addEventListener('click',function(){ clearInterval(timer); if(i>=trace.length-1){ clear(); return; } step(i+1); });
+})();
+</script>
+</body>
+</html>

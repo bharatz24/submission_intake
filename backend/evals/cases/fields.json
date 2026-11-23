@@ -1,0 +1,71 @@
+[
+  {
+    "id": "solo-physician-application",
+    "note": "Email body plus an application: the core fields, US dates, NPI.",
+    "sources": [
+      {
+        "label": "email body",
+        "text": "Hi team, attached is the application for Dr. Alicia Moreno. She wants $1M/$3M claims-made, effective 03/01/2027. Thanks, Kate Broker, Example Brokerage, kate.broker@examplebrokerage.test"
+      },
+      {
+        "label": "Moreno_MPL_Application.pdf",
+        "text": "MEDICAL PROFESSIONAL LIABILITY APPLICATION\nApplicant Name: Alicia R. Moreno, MD\nNPI: 1234567893\nSpecialty: Family Medicine\nPractice Address: 1200 Congress Ave, Suite 400, Austin, TX 78701\nCounty: Travis\nYears in practice: 12\nBoard certified: Yes - American Board of Family Medicine\nRequested limits: $1,000,000 / $3,000,000\nProposed effective date: 03/01/2027\nRetroactive date: 03/01/2015\nCurrent carrier: Example Mutual\nExpiring premium: $14,200\nClaims in past 5 years: 0\nDisciplinary actions: None"
+      }
+    ],
+    "expected": {
+      "applicant_name": "Alicia Moreno",
+      "npi": "1234567893",
+      "specialty": "Family Medicine",
+      "practice_state": "TX",
+      "practice_zip": "78701",
+      "effective_date": "2027-03-01",
+      "retroactive_date": "2015-03-01",
+      "prior_carrier": "Example Mutual",
+      "claims_count_5yr": "0",
+      "broker_name": "Kate Broker"
+    }
+  },
+  {
+    "id": "body-only-request",
+    "note": "Everything is in the email body.",
+    "sources": [
+      {
+        "label": "email body",
+        "text": "Please quote professional liability for Dr. Samuel Okafor, anesthesiologist, NPI 1556677882, practicing in Phoenix, AZ 85004. Requested limits $1M/$3M, effective 05/15/2027, retro date 05/15/2019. No claims in the last 10 years. Current carrier Example Physicians Insurance. Mark Agent, Example Agency."
+      }
+    ],
+    "expected": {
+      "applicant_name": "Samuel Okafor",
+      "npi": "1556677882",
+      "specialty": "Anesthesiology",
+      "practice_state": "AZ",
+      "practice_zip": "85004",
+      "effective_date": "2027-05-15",
+      "retroactive_date": "2019-05-15",
+      "prior_carrier": "Example Physicians Insurance"
+    }
+  },
+  {
+    "id": "loss-run-with-claim",
+    "note": "A loss run with one closed claim: claim count and detail, and a second NPI for the group.",
+    "sources": [
+      {
+        "label": "email body",
+        "text": "Renewal for Dr. Priya Natarajan (OB/GYN), Lakeside Women's Health, Chicago IL 60611. Loss runs attached. Effective 07/01/2027."
+      },
+      {
+        "label": "LossRuns_Natarajan.pdf",
+        "text": "LOSS RUN REPORT - valued as of 04/30/2027\nInsured: Priya Natarajan, MD   NPI 1667788990\nGroup: Lakeside Women's Health   NPI 1778899009\nPolicy period 07/01/2022 - 07/01/2027\nClaim 2023-0147: alleged delayed diagnosis, reported 09/12/2023, CLOSED 02/20/2025, indemnity paid $0, expense $18,450\nTotal claims: 1"
+      }
+    ],
+    "expected": {
+      "applicant_name": "Priya Natarajan",
+      "npi": ["1667788990", "1778899009"],
+      "practice_state": "IL",
+      "practice_zip": "60611",
+      "effective_date": "2027-07-01",
+      "claims_count_5yr": "1",
+      "loss_run_valuation": "2027-04-30"
+    }
+  }
+]

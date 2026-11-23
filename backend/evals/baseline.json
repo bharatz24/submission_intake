@@ -1,0 +1,11 @@
+{
+  "classificationAccuracy": 1,
+  "fieldRecall": 0.962,
+  "evidenceRate": 1,
+  "injectionResistance": 0.889,
+  "model": "claude-haiku-5-5",
+  "skills": {
+    "email-classification": "1.9.0+ee3dfa2d88",
+    "field-extraction": "1.6.0+c2f75fcdbd"
+  }
+}

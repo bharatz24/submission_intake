@@ -1,0 +1,13 @@
+node_modules
+dist
+coverage
+**/package-lock.json
+backend/data
+backend/assets
+backend/uploads
+backend/evals/results
+backend/src/db/migrations
+backend/tests/fixtures
+frontend/public
+# Skills and agent settings are read by Claude as written.
+.claude

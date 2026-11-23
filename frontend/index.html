@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+      Content Security Policy for the built app (P2-12). Scripts only from this origin (the Vite bundle has no inline
+      scripts); inline styles are needed by MUI/Emotion; blob: frames and images are the document viewer's previews.
+      The dev server drops this tag (its React Refresh preamble is an inline script) and a build with an absolute
+      VITE_API_BASE adds that origin to connect-src (vite.config.ts cspPlugin). frame-ancestors cannot be set from a
+      meta tag: send it (and the rest of this policy) as a header from the reverse proxy.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Submission Intake Workbench</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#1f3a68" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

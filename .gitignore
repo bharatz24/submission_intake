@@ -1,0 +1,23 @@
+node_modules/
+/package-lock.json
+dist/
+.env
+uploads/
+# ...but not the chunked-upload source module of that name
+!backend/src/modules/uploads/
+*.log
+coverage/
+.claude/intake/
+.claude/qa/
+.playwright-mcp/
+backend/evals/results/
+
+# Build caches
+*.tsbuildinfo
+
+# Local-only prompts and audit output
+.claude/prompts/
+docs/audit/
+
+# Production compose variables (docker-compose.prod.yml --env-file deploy.env): secrets, never committed
+deploy.env
